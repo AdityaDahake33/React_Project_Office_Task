@@ -1,6 +1,6 @@
 import React from 'react';
 
-const NewTask = ({ tasks, onTaskCompleted, onTaskFailed }) => (
+const NewTask = ({ tasks, onTaskCompleted, onTaskFailed, onTaskAccepted }) => (
   <div>
     <h3 className="text-lg font-semibold mb-4 text-blue-700">New Tasks</h3>
     <ul className="space-y-4">
@@ -20,6 +20,7 @@ const NewTask = ({ tasks, onTaskCompleted, onTaskFailed }) => (
             {task.category && <span><b>Category:</b> {task.category}</span>}
           </div>
           <div className="flex gap-2 mt-2">
+            <button className="px-4 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-semibold transition shadow" onClick={() => onTaskAccepted(task.id)}>Accept Task</button>
             <button className="px-4 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-semibold transition shadow" onClick={() => onTaskCompleted(task.id)}>Task Completed</button>
             <button className="px-4 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-semibold transition shadow" onClick={() => onTaskFailed(task.id)}>Task Failed</button>
           </div>

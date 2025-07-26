@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react'
 import Login from './Companents/Auth/Login'
 import AdminDashboard from './Companents/Dashboard/Admin_Dashboard'
 import EmployeeDashboard from './Companents/Dashboard/Employee_Dashboard'
-import { getLocalStorage } from './Utils/LocalStoreage'
+import { useAuthContext } from './Context/AuthContext'
 
 const App = () => {
   const [user, setUser] = useState(null)
   const [loggedInUserData, setLoggedInUserData] = useState(null)
-  const [employees, setEmployees] = useState([])
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('loggedInUser')
@@ -16,9 +15,6 @@ const App = () => {
       setUser(userData.role)
       setLoggedInUserData(userData.data)
     }
-    // Always fetch employees for admin sidebar
-    const { employees } = getLocalStorage()
-    setEmployees(employees || [])
   }, [])
 
   // New handleLogin signature: (role, userData)
@@ -35,14 +31,14 @@ const App = () => {
   const handleLogout = () => {
     setUser(null)
     setLoggedInUserData(null)
-    localStorage.clear()
+    localStorage.removeItem('loggedInUser')
   }
 
   if (!user) {
     return <Login onLogin={handleLogin} />
   }
   if (user === 'admin') {
-    return <AdminDashboard employees={employees} onLogout={handleLogout} />
+    return <AdminDashboard onLogout={handleLogout} />
   }
   if (user === 'employee') {
     return <EmployeeDashboard user={loggedInUserData} onLogout={handleLogout} />

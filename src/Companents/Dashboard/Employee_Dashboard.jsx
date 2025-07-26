@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { FaCheckCircle, FaExclamationCircle, FaHourglassHalf, FaClipboardList, FaEnvelope, FaUser } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaCheckCircle, FaExclamationCircle, FaHourglassHalf, FaClipboardList, FaEnvelope, FaUser, FaBell } from 'react-icons/fa';
+import { useAuthContext } from '../../Context/AuthContext';
 import NewTask from '../TaskList/NewTask';
 import CompleteTask from '../TaskList/CompleteTask';
 import AcceptedTask from '../TaskList/AcceptedTask';
@@ -29,9 +30,32 @@ const getStatus = (task) => {
 };
 
 const EmployeeDashboard = ({ user, onLogout }) => {
+  const { employees, updateTaskStatus } = useAuthContext();
   const [activeNav, setActiveNav] = useState('Dashboard');
-  const [taskList, setTaskList] = useState(user?.tasks || []);
-  const [recentActivities, setRecentActivities] = useState([]);
+  const [notification, setNotification] = useState(null);
+  const [prevTaskCount, setPrevTaskCount] = useState(0);
+  
+  // Get current employee data from context
+  const currentEmployee = employees.find(emp => emp.email === user?.email);
+  const taskList = currentEmployee?.tasks || [];
+  const newTaskCount = taskList.filter(t => t.newTask).length;
+
+  // Check for new tasks and show notification
+  useEffect(() => {
+    if (newTaskCount > prevTaskCount && prevTaskCount > 0) {
+      setNotification({
+        type: 'success',
+        message: `You have ${newTaskCount - prevTaskCount} new task(s) assigned!`,
+        title: 'New Task Assigned'
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+    }
+    setPrevTaskCount(newTaskCount);
+  }, [newTaskCount, prevTaskCount]);
 
   const acceptedTasks = taskList.filter(t => t.active && !t.completed && !t.failed && !t.newTask);
   const completedTasks = taskList.filter(t => t.completed);
@@ -46,28 +70,36 @@ const EmployeeDashboard = ({ user, onLogout }) => {
     { label: 'Failed', value: failedTasks.length, color: 'bg-red-400', text: 'text-white' },
   ];
 
-  // Handlers for updating task status
+  // Handlers for updating task status using context
   const handleTaskCompleted = (id, source) => {
-    setTaskList(prev => prev.map((task) => {
-      if (source === 'new' && task.id === id && task.newTask) {
-        return { ...task, completed: true, newTask: false, failed: false, active: false };
-      }
-      if (source === 'accepted' && task.id === id && task.active && !task.completed && !task.failed && !task.newTask) {
-        return { ...task, completed: true, failed: false };
-      }
-      return task;
-    }));
+    if (!currentEmployee) return;
+    
+    let newStatus = 'completed';
+    if (source === 'new') {
+      newStatus = 'completed';
+    } else if (source === 'accepted') {
+      newStatus = 'completed';
+    }
+    
+    updateTaskStatus(currentEmployee.id, id, newStatus);
   };
+
   const handleTaskFailed = (id, source) => {
-    setTaskList(prev => prev.map((task) => {
-      if (source === 'new' && task.id === id && task.newTask) {
-        return { ...task, failed: true, newTask: false, completed: false, active: false };
-      }
-      if (source === 'accepted' && task.id === id && task.active && !task.completed && !task.failed && !task.newTask) {
-        return { ...task, failed: true, completed: false };
-      }
-      return task;
-    }));
+    if (!currentEmployee) return;
+    
+    let newStatus = 'failed';
+    if (source === 'new') {
+      newStatus = 'failed';
+    } else if (source === 'accepted') {
+      newStatus = 'failed';
+    }
+    
+    updateTaskStatus(currentEmployee.id, id, newStatus);
+  };
+
+  const handleTaskAccepted = (id) => {
+    if (!currentEmployee) return;
+    updateTaskStatus(currentEmployee.id, id, 'active');
   };
 
   return (
@@ -84,7 +116,14 @@ const EmployeeDashboard = ({ user, onLogout }) => {
               className={`flex items-center w-full px-4 py-3 rounded-lg transition-all duration-150 text-gray-700 font-medium hover:bg-blue-50 hover:text-blue-600 focus:outline-none ${activeNav === link.name ? 'bg-blue-100 text-blue-700' : ''}`}
               onClick={() => setActiveNav(link.name)}
             >
-              <span className="mr-3">{link.icon}</span>
+              <span className="mr-3 relative">
+                {link.icon}
+                {link.name === 'Tasks' && newTaskCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                    {newTaskCount}
+                  </span>
+                )}
+              </span>
               {link.name}
             </button>
           ))}
@@ -92,6 +131,29 @@ const EmployeeDashboard = ({ user, onLogout }) => {
       </aside>
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto animate-fade-in">
+        {/* Notification */}
+        {notification && (
+          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 ${
+            notification.type === 'success' 
+              ? 'bg-green-100 border-green-500 text-green-700' 
+              : 'bg-red-100 border-red-500 text-red-700'
+          } animate-slide-in-right`}>
+            <div className="flex items-center gap-2">
+              <FaBell className="text-lg" />
+              <div>
+                <div className="font-semibold">{notification.title}</div>
+                <div className="text-sm">{notification.message}</div>
+              </div>
+              <button 
+                className="ml-4 text-lg hover:opacity-70" 
+                onClick={() => setNotification(null)}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -119,7 +181,7 @@ const EmployeeDashboard = ({ user, onLogout }) => {
         {/* Task List (only on Tasks) */}
         {activeNav === 'Tasks' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <NewTask tasks={newTasks} onTaskCompleted={id => handleTaskCompleted(id, 'new')} onTaskFailed={id => handleTaskFailed(id, 'new')} />
+            <NewTask tasks={newTasks} onTaskCompleted={id => handleTaskCompleted(id, 'new')} onTaskFailed={id => handleTaskFailed(id, 'new')} onTaskAccepted={handleTaskAccepted} />
             <AcceptedTask tasks={acceptedTasks} onTaskCompleted={id => handleTaskCompleted(id, 'accepted')} onTaskFailed={id => handleTaskFailed(id, 'accepted')} />
             <CompleteTask tasks={completedTasks} />
             <FailedTask tasks={failedTasks} />

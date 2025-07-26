@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuthContext } from '../../Context/AuthContext';
 
 const initialTaskState = {
   taskTitle: '',
@@ -11,23 +12,26 @@ const initialTaskState = {
   failed: false,
 };
 
-const AdminDashboard = ({ employees = [], onLogout }) => {
+const AdminDashboard = ({ onLogout }) => {
+  const { employees, addTaskToEmployee } = useAuthContext();
   const [activeNav, setActiveNav] = useState('Dashboard');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskForm, setTaskForm] = useState(initialTaskState);
   const [selectedEmpId, setSelectedEmpId] = useState('');
-  const [employeeList, setEmployeeList] = useState(employees);
 
   const summaryData = [
-    { title: 'Total Users', value: employeeList.length, icon: (
+    { title: 'Total Users', value: employees.length, icon: (
       <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m6-2a4 4 0 1 0-8 0 4 4 0 0 0 8 0zm6-2a4 4 0 1 0-8 0 4 4 0 0 0 8 0z" /></svg>
     ) },
-    { title: 'Active Tasks', value: 42, icon: (
+    { title: 'Active Tasks', value: employees.reduce((total, emp) => total + (emp.tasks?.filter(t => t.active || t.newTask).length || 0), 0), icon: (
       <svg className="w-7 h-7 text-purple-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m2 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0zm-6 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0zm6 8a2 2 0 1 0-4 0 2 2 0 0 0 4 0zm-6 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0z" /></svg>
     ) },
-    { title: 'Performance', value: '98%', icon: (
-      <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 17a4 4 0 0 0 2 0m-2 0a4 4 0 0 1-2-3.87V7a4 4 0 0 1 8 0v6.13A4 4 0 0 1 13 17m-2 0v1a2 2 0 0 0 4 0v-1" /></svg>
+    { title: 'New Tasks', value: employees.reduce((total, emp) => total + (emp.tasks?.filter(t => t.newTask).length || 0), 0), icon: (
+      <svg className="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" /></svg>
+    ) },
+    { title: 'Completed Tasks', value: employees.reduce((total, emp) => total + (emp.tasks?.filter(t => t.completed).length || 0), 0), icon: (
+      <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
     ) },
   ];
 
@@ -57,11 +61,13 @@ const AdminDashboard = ({ employees = [], onLogout }) => {
   const handleCreateTask = (e) => {
     e.preventDefault();
     if (!selectedEmpId) return;
-    setEmployeeList(prev => prev.map(emp =>
-      emp.id === parseInt(selectedEmpId)
-        ? { ...emp, tasks: [...(emp.tasks || []), { ...taskForm, id: Date.now() }] }
-        : emp
-    ));
+    
+    const selectedEmp = employees.find(emp => emp.id === parseInt(selectedEmpId));
+    addTaskToEmployee(parseInt(selectedEmpId), taskForm);
+    
+    // Show success message
+    alert(`Task "${taskForm.taskTitle}" has been successfully assigned to ${selectedEmp?.firstName}!`);
+    
     setShowTaskModal(false);
     setTaskForm(initialTaskState);
     setSelectedEmpId('');
@@ -103,7 +109,7 @@ const AdminDashboard = ({ employees = [], onLogout }) => {
         {activeNav === 'Dashboard' && (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
               {summaryData.map((card) => (
                 <div key={card.title} className="bg-white rounded-2xl shadow-md p-6 flex items-center space-x-4 hover:shadow-xl transition-all duration-200 border border-gray-100 animate-fade-in">
                   <div className="bg-blue-50 rounded-full p-3">
@@ -132,7 +138,7 @@ const AdminDashboard = ({ employees = [], onLogout }) => {
         )}
         {activeNav === 'Users' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {employeeList.map(emp => (
+            {employees.map(emp => (
               <div
                 key={emp.id}
                 className="bg-blue-50 rounded-2xl p-6 shadow-lg flex flex-col items-center border border-blue-100 hover:shadow-2xl transition-all duration-200 cursor-pointer animate-fade-in"
@@ -153,7 +159,7 @@ const AdminDashboard = ({ employees = [], onLogout }) => {
               <button className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow transition-all" onClick={() => setShowTaskModal(true)}>Create Task</button>
             </div>
             <div className="space-y-8">
-              {employeeList.map(emp => (
+              {employees.map(emp => (
                 <div key={emp.id} className="bg-white rounded-3xl shadow-2xl border border-blue-100 p-8 animate-fade-in">
                   <div className="flex items-center mb-4 gap-6">
                     <img src={`https://i.pravatar.cc/80?u=${emp.email}`} alt="Avatar" className="w-20 h-20 rounded-full border-2 border-blue-300" />
@@ -200,7 +206,7 @@ const AdminDashboard = ({ employees = [], onLogout }) => {
                       <label className="block text-gray-700 mb-1 font-semibold">Assign to Employee</label>
                       <select className="w-full border border-gray-300 rounded-lg px-3 py-2" value={selectedEmpId} onChange={e => setSelectedEmpId(e.target.value)} required>
                         <option value="">Select Employee</option>
-                        {employeeList.map(emp => (
+                        {employees.map(emp => (
                           <option key={emp.id} value={emp.id}>{emp.firstName} ({emp.email})</option>
                         ))}
                       </select>
