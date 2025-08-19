@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthContext } from '../../Context/AuthContext';
+import NetworkAnalysis from './NetworkAnalysis';  // ADDED IMPORT
 
 const initialTaskState = {
   taskTitle: '',
@@ -39,6 +40,13 @@ const AdminDashboard = ({ onLogout }) => {
     { name: 'Dashboard', icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6" /></svg>
     ) },
+    { name: 'Network Analysis',  // ADDED NAV ITEM
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )
+  },
     { name: 'Users', icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m6-2a4 4 0 1 0-8 0 4 4 0 0 0 8 0z" /></svg>
     ) },
@@ -105,6 +113,12 @@ const AdminDashboard = ({ onLogout }) => {
             <button className="ml-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm shadow transition-all" onClick={onLogout}>Log Out</button>
           </div>
         </div>
+        {/* Network Analysis Panel */}
+        {activeNav === 'Network Analysis' && (
+          <div className="p-6 w-full" style={{ maxWidth: '95%' }}>
+            <NetworkAnalysis />
+          </div>
+        )}
         {/* Main Content Sections */}
         {activeNav === 'Dashboard' && (
           <>

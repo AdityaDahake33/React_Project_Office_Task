@@ -5,6 +5,7 @@ import NewTask from '../TaskList/NewTask';
 import CompleteTask from '../TaskList/CompleteTask';
 import AcceptedTask from '../TaskList/AcceptedTask';
 import FailedTask from '../TaskList/FailedTask';
+// REMOVED: import NetworkAnalysis from './NetworkAnalysis';
 
 const navLinks = [
   { name: 'Dashboard', icon: (
@@ -19,6 +20,14 @@ const navLinks = [
   { name: 'Settings', icon: (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" /></svg>
   ) },
+  { 
+    name: 'Network Analysis', 
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ) 
+  },
 ];
 
 const getStatus = (task) => {
@@ -197,6 +206,11 @@ const EmployeeDashboard = ({ user, onLogout }) => {
               {/* Add more details here if available */}
               <div className="text-gray-500 text-sm mt-2">Employee Profile</div>
             </div>
+          </div>
+        )}
+        {activeNav === 'Network Analysis' && (
+          <div className="p-6 w-full">
+            // REMOVED: Network Analysis rendering section
           </div>
         )}
       </main>
