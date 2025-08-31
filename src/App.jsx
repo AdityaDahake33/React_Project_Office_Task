@@ -12,8 +12,16 @@ const App = () => {
     const loggedInUser = localStorage.getItem('loggedInUser')
     if (loggedInUser) {
       const userData = JSON.parse(loggedInUser)
-      setUser(userData.role)
-      setLoggedInUserData(userData.data)
+      
+      // Add expiration check
+      const isSessionValid = /* Add your session validation logic */ true;
+      
+      if (isSessionValid) {
+        setUser(userData.role)
+        setLoggedInUserData(userData.data)
+      } else {
+        localStorage.removeItem('loggedInUser') // Clear invalid session
+      }
     }
   }, [])
 
