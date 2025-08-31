@@ -1,34 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const NetworkAnalysis = () => {
+export const NetworkAnalysis = () => {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SNORT_WS_URL, {
-      query: { token: import.meta.env.VITE_SNORT_TOKEN },
-      transports: ['websocket']
-    });
+    const websocket = new WebSocket(`${import.meta.env.VITE_SNORT_WS_URL}?token=${import.meta.env.VITE_SNORT_TOKEN}`);
 
-    socket.on('connect', () => {
-      console.log('✅ Connected to Snort WebSocket Server');
-    });
+    websocket.onopen = () => {
+      console.log('✅ WebSocket connection established');
+    };
 
-    socket.on('snort_alert', (data) => {
+    websocket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
       console.log('🚨 Snort Alert:', data);
       setAlerts(prev => [{
         id: Date.now(),
         message: data.message,
         timestamp: new Date().toLocaleTimeString()
       }, ...prev]);
-    });
+    };
 
-    socket.on('disconnect', () => {
-      console.log('❌ Disconnected from server');
-    });
+    websocket.onclose = () => {
+      console.log('❌ WebSocket connection closed');
+    };
 
     return () => {
-      socket.disconnect();
+      websocket.close();
     };
   }, []);
 
