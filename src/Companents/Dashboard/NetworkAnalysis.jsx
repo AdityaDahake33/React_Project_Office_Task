@@ -1,46 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 
-export const NetworkAnalysis = () => {
+const NetworkAnalysis = () => {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-    const websocket = new WebSocket(`${import.meta.env.VITE_SNORT_WS_URL}?token=${import.meta.env.VITE_SNORT_TOKEN}`);
+    // Using environment variable from .env
+    const socket = new WebSocket(import.meta.env.VITE_SNORT_WS_URL);
 
-    websocket.onopen = () => {
-      console.log('✅ WebSocket connection established');
+    socket.onmessage = (event) => {
+      setAlerts(prev => [...prev, event.data]);
     };
 
-    websocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('🚨 Snort Alert:', data);
-      setAlerts(prev => [{
-        id: Date.now(),
-        message: data.message,
-        timestamp: new Date().toLocaleTimeString()
-      }, ...prev]);
+    socket.onopen = () => {
+      console.log("✅ Connected to WebSocket server");
     };
 
-    websocket.onclose = () => {
-      console.log('❌ WebSocket connection closed');
+    socket.onerror = (err) => {
+      console.error("❌ WebSocket error:", err);
     };
 
-    return () => {
-      websocket.close();
-    };
+    return () => socket.close();
   }, []);
 
   return (
-    <div className="network-analysis">
-      <h2>Network Intrusion Alerts</h2>
-      <div className="alert-list">
-        {alerts.map(alert => (
-          <div key={alert.id} className="alert-item">
-            <span className="alert-time">[{alert.timestamp}]</span>
-            <span className="alert-message">{alert.message}</span>
-          </div>
+    <div className="network-analysis p-6">
+      <h1 className="text-xl font-bold">🚨 Live Snort Alerts</h1>
+      <ul>
+        {alerts.map((alert, i) => (
+          <li 
+            key={i} 
+            className="alert-item border p-2 my-2 bg-white rounded shadow"
+          >
+            {alert}
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 };
