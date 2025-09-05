@@ -1,5 +1,5 @@
 {
-  "name": "react",
+  "name": "api",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -28,5 +28,17 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
     "vite": "^7.0.0"
-  }
+  },
+  "description": "=======\r # 🗂 Admin-Employee Task Management Web App",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdityaDahake33/React_Project_Office_Task.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AdityaDahake33/React_Project_Office_Task/issues"
+  },
+  "homepage": "https://github.com/AdityaDahake33/React_Project_Office_Task#readme"
 }
