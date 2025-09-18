@@ -40,19 +40,16 @@ const NetworkAnalysis = () => {
           <p className="col-span-full text-gray-600">No alerts received yet.</p>
         ) : (
           alerts.map((alert, index) => (
-            <div 
-              key={index} 
-              className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-200"
-            >
-              <p className="text-sm text-gray-500 mb-2">
-                <strong className="text-gray-700">Timestamp:</strong> {new Date(alert.timestamp).toLocaleString()}
-              </p>
-              <p className="text-gray-800 font-medium mb-2">
-                <strong className="text-gray-700">Message:</strong> {alert.message}
-              </p>
-              <p className="text-gray-600 text-sm">
-                <strong className="text-gray-700">Source Host:</strong> {alert.source.host}
-              </p>
+            <div key={index} className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+                <p className="text-sm text-gray-500 mb-2">
+                    <strong className="text-gray-700">Timestamp:</strong> {new Date(alert.timestamp).toLocaleString()}
+                </p>
+                <p className="text-gray-800 font-medium mb-2">
+                    <strong className="text-gray-700">Message:</strong> {alert.message}
+                </p>
+                <p className="text-gray-600 text-sm">
+                    <strong className="text-gray-700">Source Host:</strong> {alert.source}
+                </p>
             </div>
           ))
         )}
