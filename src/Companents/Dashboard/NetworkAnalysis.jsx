@@ -5,6 +5,8 @@ const NetworkAnalysis = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [lastAlertCount, setLastAlertCount] = useState(0);
 
   const fetchAlerts = async () => {
     try {
@@ -28,8 +30,35 @@ const NetworkAnalysis = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (!loading && !error && alerts.length > lastAlertCount) {
+      setShowPopup(true);
+      setLastAlertCount(alerts.length);
+    }
+  }, [loading, error, alerts, lastAlertCount]);
+
+  const closePopup = () => {
+    setShowPopup(false);
+  };
+
   return (
     <div className="network-analysis p-6">
+      {showPopup && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Alert on Admin Dashboard</h2>
+            <p className="text-gray-700 mb-6">
+              New network alerts have been detected. Please review the dashboard for details.
+            </p>
+            <button
+              onClick={closePopup}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <h1 className="text-xl font-bold mb-4">Network Analysis Dashboard</h1>
       
       {loading && <p className="text-gray-500">Loading alerts...</p>}
